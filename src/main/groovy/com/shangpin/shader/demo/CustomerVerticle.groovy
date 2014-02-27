@@ -13,14 +13,17 @@ class CustomerVerticle extends Verticle{
 
     def start(){
         def appConfig = container.config
+        def log = container.logger
+        def server = vertx.createHttpServer()
 
-
-        container.deployModule("io.vertex~mod-mongo-persistor~2.1.0",appConfig.get("mongo-persistor"))
+        container.with {
+            deployModule("io.vertex~mod-mongo-persistor~2.1.0",appConfig.get("mongo-persistor"))
+        }
 
         def routeMatcher = new RouteMatcher()
 
         routeMatcher.get("/"){HttpServerRequest req->
-            req.response.sendFile("index.html")
+            req.response.sendFile("static/index.html")
         }
 
         routeMatcher.get("/customers"){HttpServerRequest req->
@@ -31,14 +34,11 @@ class CustomerVerticle extends Verticle{
             }
         }
 
-        def server = vertx.createHttpServer()
+
         server.requestHandler(routeMatcher.asClosure())
 
         server.listen(8888)
 
-        vertx.createHttpServer().requestHandler(){HttpServerRequest req->
-                req.response.end("Hello word")
-            }.listen(8888)
-        container.logger.info("Webserver started,listening on port 8888")
+        log.info("Webserver started,listening on port 8888")
     }
 }

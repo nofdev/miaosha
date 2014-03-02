@@ -6,7 +6,39 @@
         "address": "mongodb-persistor",
         "host": "localhost",
         "port": 27017,
+//        "port": 27000,
         "pool_size": 15,
-        "db_name": "miaosha"
+        "db_name": "miaosha",
+//        "fake": false,
+        "use_ssl":false
+    },
+    "web-server": {
+//        "web_root": "web",
+//        "index_page": "index.html",
+//        "host": "0.0.0.0",
+        "port": 8888,
+//        "static_files": true,
+        "route_matcher": true
+//        "gzip_files": false,
+//
+//        "ssl": false,
+//        "key_store_password": "wibble",
+//        "key_store_path": "server-keystore.jks",
+//
+//        "bridge": false,
+//        "inbound_permitted": [],
+//        "outbound_permitted": [],
+//        "sjs_config": {
+//            "prefix": "/eventbus"
+//        },
+//        "auth_timeout": 5,//minutes
+//        "auth_address": "vertx.basicauthmanager.authorise"
     }
+//    ,
+//    "auth-mgr":{
+//        "address": "auth-mgr",
+//        "user_collection": "users",
+//        "persistor_address": "mongodb-persistor",
+//        "session_timeout": 900000
+//    }
 }

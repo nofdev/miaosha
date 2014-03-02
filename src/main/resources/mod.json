@@ -2,6 +2,7 @@
 
   // Java verticle
   "main":"groovy:com.shangpin.miaosha.server.App",
+//  "main":"com.mycompany.myproject.PingVerticle",
   "preserve-cwd":true,
 
   // In this example we also provide various other versions of the main verticle, you can uncomment this and

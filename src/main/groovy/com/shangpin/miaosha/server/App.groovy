@@ -12,46 +12,44 @@ import org.vertx.java.core.json.JsonObject
  */
 class App extends Verticle {
 
-//    def appConfig = container.config
-//    def logger = container.logger
-//    def server = vertx.createHttpServer()
-
     def start() {
         def appConfig = container.config
         def logger = container.logger
-        def server = vertx.createHttpServer()
+
+        logger.info("appConfig is" + appConfig)
 //
         container.with {
-            deployModule("io.vertx~mod-mongo-persistor~2.1.0", appConfig.get("mongo-persistor"))
-//            deployModule("io.vertx~mod-web-server~2.0.0-final")
-        }
-
-        def routeMatcher = new RouteMatcher()
-
-        routeMatcher.get("/") { HttpServerRequest req ->
-            req.response.sendFile("static/index.html")
-        }
-
-        routeMatcher.get("/test"){ HttpServerRequest req ->
-            def userDocument = ["username":"mengqiang","password":"123456"]
-            def json = ["action":"save","collection": "users","document":userDocument]
-            vertx.eventBus.send("mongodb-persistor", json){Message<JsonObject> message ->
-                req.response().end(message.body().encodePrettily())
+            deployModule("io.vertx~mod-mongo-persistor~2.1.0", appConfig.get("mongo-persistor")) {
+                deployVerticle("groovy:com.shangpin.miaosha.persistor.MockDataInitializer")
             }
+//            deployModule("io.vertx~mod-web-server~2.0.0-final",appConfig.get("web-server"))
+            deployVerticle("com.shangpin.miaosha.server.MyWebServer", appConfig.get("web-server"))
+//            deployModule("io.vertx~mod-auth-mgr~2.0.0-final",appConfig.get("auth-mgr"))
+            deployVerticle("groovy:com.shangpin.miaosha.verticle.ProductVerticle")
         }
 
-        routeMatcher.get("/users") { HttpServerRequest req ->
-            def matcher = new JsonObject(["name": "mengqiang"])
-            def json = new JsonObject(["collection": "users", "action": "find", "matcher": matcher])
-            vertx.eventBus.send("mongodb-persistor", json) { Message<JsonObject> message ->
-                req.response().end(message.body().encodePrettily())
-            }
-        }
-
-
-        server.requestHandler(routeMatcher.asClosure())
-
-        server.listen(8888)
+//        def routeMatcher = new RouteMatcher()
+//
+//        routeMatcher.get("/") { HttpServerRequest req ->
+//            req.response.sendFile("static/index.html")
+//        }
+//
+//        routeMatcher.get("/test"){ HttpServerRequest req ->
+//            def json = ["action":"save"]
+//        }
+//
+//        routeMatcher.get("/customers") { HttpServerRequest req ->
+//            def matcher = new JsonObject(["name": "mengqiang"])
+//            def json = new JsonObject(["collection": "customers", "action": "find", "matcher": matcher])
+//            vertx.eventBus.send("mongodb-persistor", json) { Message<JsonObject> message ->
+//                req.response().end(message.body().encodePrettily())
+//            }
+//        }
+//
+//
+//        server.requestHandler(routeMatcher.asClosure())
+//
+//        server.listen(8888)
 
     }
 }

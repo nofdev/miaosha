@@ -5,7 +5,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.mods.web.WebServerBase;
+import org.vertx.modules.web.WebServerBase;
 
 import java.util.HashMap;
 import java.util.Map;

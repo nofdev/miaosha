@@ -7,18 +7,32 @@ import org.vertx.groovy.platform.Verticle
  */
 class MockDataInitializer extends Verticle {
     def start() {
-        vertx.eventBus.send("mongodb-persistor", buildUser())
+        productInit()
+        skuInventoryInit()
     }
 
-    private buildUser() {
+    private void productInit() {
         def skus = [
-                ["id": "1001", "attributes": ["color": "red", "size": "37"], "inventory": 200],
-                ["id": "1002", "attributes": ["color": "red", "size": "38"], "inventory": 200],
-                ["id": "1003", "attributes": ["color": "red", "size": "39"], "inventory": 200],
+                ["_id": "1001", "attributes": ["color": "red", "size": "37"]],
+                ["_id": "1002", "attributes": ["color": "red", "size": "38"]],
+                ["_id": "1003", "attributes": ["color": "red", "size": "39"]],
         ]
-        def product = ["id": "1000", "name": "春哥鞋", "price": 2000, "skus": skus]
+        def product = ["_id": "1000", "name": "春哥鞋", "price": 2000, "skus": skus]
 
         def saveOps = ["action": "save", "collection": "products", "document": product]
 
+        vertx.eventBus.send("mongodb-persistor", saveOps)
+    }
+
+    private void skuInventoryInit(){
+        def skuInventories = [
+                ["_id":"1001","inventory": 200],
+                ["_id":"1002","inventory": 200],
+                ["_id":"1003","inventory": 300],
+        ]
+        skuInventories.each {
+            def saveOps = ["action":"save","collection": "skuInventories","document":it]
+            vertx.eventBus.send("mongodb-persistor", saveOps)
+        }
     }
 }

@@ -13,43 +13,24 @@ import org.vertx.java.core.json.JsonObject
 class App extends Verticle {
 
     def start() {
-        def appConfig = container.config
+        def config = container.config
         def logger = container.logger
 
-        logger.info("appConfig is" + appConfig)
-//
+        logger.info("config is" + config)
         container.with {
-            deployModule("io.vertx~mod-mongo-persistor~2.1.0", appConfig.get("mongo-persistor")) {
+            deployModule("io.vertx~mod-mongo-persistor~2.1.0", config.get("mongo-persistor")) {
                 deployVerticle("groovy:com.shangpin.miaosha.persistor.MockDataInitializer")
             }
-//            deployModule("io.vertx~mod-web-server~2.0.0-final",appConfig.get("web-server"))
-            deployVerticle("com.shangpin.miaosha.server.MyWebServer", appConfig.get("web-server"))
 //            deployModule("io.vertx~mod-auth-mgr~2.0.0-final",appConfig.get("auth-mgr"))
+//            deployModule("io.vertx~mod-web-server~2.0.0-final",appConfig.get("web-server"))
+            deployVerticle("com.shangpin.miaosha.server.MyWebServer", config.get("web-server"))
             deployVerticle("groovy:com.shangpin.miaosha.verticle.ProductVerticle")
+            deployWorkerVerticle("groovy:com.shangpin.miaosha.worker.TestMultiWorker",null,5)
         }
-
-//        def routeMatcher = new RouteMatcher()
-//
-//        routeMatcher.get("/") { HttpServerRequest req ->
-//            req.response.sendFile("static/index.html")
-//        }
-//
-//        routeMatcher.get("/test"){ HttpServerRequest req ->
-//            def json = ["action":"save"]
-//        }
-//
-//        routeMatcher.get("/customers") { HttpServerRequest req ->
-//            def matcher = new JsonObject(["name": "mengqiang"])
-//            def json = new JsonObject(["collection": "customers", "action": "find", "matcher": matcher])
-//            vertx.eventBus.send("mongodb-persistor", json) { Message<JsonObject> message ->
-//                req.response().end(message.body().encodePrettily())
-//            }
-//        }
-//
-//
-//        server.requestHandler(routeMatcher.asClosure())
-//
-//        server.listen(8888)
-
+        (0..1000).each {
+            vertx.eventBus.send("testMultiWorder",new JsonObject(["aa":"ping"])){Message message ->
+                logger.info(message.body())
+            }
+        }
     }
 }

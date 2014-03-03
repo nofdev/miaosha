@@ -15,7 +15,7 @@
   //"main":"groovy:com.mycompany.myproject.GroovyPingVerticle",
 
   // Groovy *script* verticle
-  //"main": "GroovyVerticle.groovy",
+//  "main": "GroovyVerticle.groovy",
 
   // Ruby verticle
   //"main":"ping_verticle.rb",

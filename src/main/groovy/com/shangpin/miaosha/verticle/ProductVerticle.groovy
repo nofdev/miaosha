@@ -11,14 +11,14 @@ class ProductVerticle extends Verticle {
     def start() {
         vertx.eventBus.registerHandler("product"){Message message->
             container.logger.info("Request message is "+message.body())
-//            def matcher = ["id": message.body()]
-//            def findOps = ["collection": "products", "action": "findone", "matcher": matcher]
-//            vertx.eventBus.send("mongodb-persistor", findOps) { Message result ->
-//                message.reply(result.body)
-//            }
+            def matcher = ["_id": message.body().get("id")]
+            def findOps = ["collection": "products", "action": "findone", "matcher": matcher]
+            vertx.eventBus.send("mongodb-persistor", findOps) { Message result ->
+                message.reply(result.body)
+            }
         }
-        vertx.eventBus.registerHandler("inventory"){Message message->
-
+        vertx.eventBus.registerHandler("inventories"){Message message->
+            container.logger.info("Request message is "+message.body())
         }
     }
 }

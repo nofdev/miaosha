@@ -5,7 +5,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.modules.web.WebServerBase;
+import org.vertx.mods.web.WebServerBase;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,9 +34,19 @@ public class MyWebServer extends WebServerBase {
 //        matcher.get("/price"){
 //
 //        }
-//        matcher.get("/inventory"){
-//
-//        }
+        matcher.get("/inventories",new Handler<HttpServerRequest>() {
+            @Override
+            public void handle(final HttpServerRequest req) {
+                Map<String,Object> map = new HashMap<>();
+                map.put("ids",req.params().get("ids").split(","));
+                vertx.eventBus().send("inventories", new JsonObject(map), new Handler<Message>() {
+                    @Override
+                    public void handle(Message reply) {
+                        req.response().end(reply.body().toString());
+                    }
+                });
+            }
+        });
 //        matcher.get("/time"){
 //
 //        }

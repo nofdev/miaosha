@@ -3,15 +3,22 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title></title>
+    <script src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
 </head>
 <body>
-    <form method="post" action="/order">
-        <input type="text" name="skuIds" />
-        <input type="text" name="skuIds" />
-        <input type="text" name="count" />
-        <input type="text" name="count" />
-        <input type="text" name="feiji" />
-        <input type="submit" value="Submit">
-    </form>
+    <a id="testOrderSubmit" href="#">Test Order Submit</a>
+    <div id="result"></div>
+    <script language="JavaScript">
+        var submitOrder = function(json){
+            $.post("/order", json, function(data){
+                $("#result").html(data);
+            });
+        };
+
+        $("#testOrderSubmit").click(function(){
+            var json = {cart:"[{skuId:1001, quantity:10},{skuId:1002,quantity:20}]",addressId:2000};
+            submitOrder(json);
+        });
+    </script>
 </body>
 </html>

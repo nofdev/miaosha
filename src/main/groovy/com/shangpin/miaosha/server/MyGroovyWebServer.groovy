@@ -74,10 +74,16 @@ public class MyGroovyWebServer extends WebServerBase {
                 String contentType = req.headers.get("Content-Type")
                 logger.info(buffer.toString())
                 def params = [:]
-                if ("application/x-www-form-urlencoded".equals(contentType)) {
+//                if ("application/x-www-form-urlencoded".equals(contentType)) {
                     def qsd = new QueryStringDecoder(buffer.toString(), false)
-                    params = qsd.parameters()
-                }
+                    params = qsd.parameters().collectEntries {
+                        if (it.value.size() <= 1) {
+                            ["${it.key}": it.value.get(0)]
+                        }else{
+                            ["${it.key}": it.value]
+                        }
+                    }
+//                }
                 vertx.eventBus.send("order/post", params) { Message reply ->
                     req.response.end(Json.encode(reply.body()))
                 }

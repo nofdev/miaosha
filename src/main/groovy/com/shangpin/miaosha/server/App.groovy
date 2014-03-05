@@ -21,8 +21,9 @@ class App extends Verticle {
             }
 //            deployModule("io.vertx~mod-auth-mgr~2.0.0-final",appConfig.get("auth-mgr"))
 //            deployModule("io.vertx~mod-web-server~2.0.0-final",appConfig.get("web-server"))
-            deployVerticle("com.shangpin.miaosha.server.MyWebServer", config.get("web-server"))
+            deployVerticle("groovy:com.shangpin.miaosha.server.MyGroovyWebServer", config.get("web-server"))
             deployVerticle("groovy:com.shangpin.miaosha.verticle.ProductVerticle")
+            deployVerticle("groovy:com.shangpin.miaosha.verticle.TradeVerticle")
 //            deployWorkerVerticle("groovy:com.shangpin.miaosha.worker.TestMultiWorker", null, 5)
         }
 

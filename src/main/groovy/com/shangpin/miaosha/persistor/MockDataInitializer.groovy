@@ -31,7 +31,7 @@ class MockDataInitializer extends Verticle {
                 ["_id":"1003","inventory": 300],
         ]
         skuInventories.each {
-            def saveOps = ["action":"save","collection": "skuInventories","document":it]
+            def saveOps = ["action":"save","collection": "inventories","document":it]
             vertx.eventBus.send("mongodb-persistor", saveOps)
         }
     }

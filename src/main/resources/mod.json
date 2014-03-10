@@ -38,6 +38,7 @@
   "keywords": ["gerbils", "cars", "cheese", "chocolate", "underpants", "herring"],
   "homepage": "url to your project page",
 
+//  "lang-impl":"io.vertx~lang-groovy~2.1RC1:org.vertx.groovy.platform.impl.GroovyVerticleFactory", //just take effect on a per module basis(@link https://bugs.eclipse.org/bugs/show_bug.cgi?id=427490)
   "auto-redeploy": true
 
 }

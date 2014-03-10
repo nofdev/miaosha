@@ -1,33 +1,31 @@
 package com.shangpin.miaosha.server
 
-import com.shangpin.miaosha.BusinessException
 import io.netty.handler.codec.http.QueryStringDecoder
-import org.vertx.groovy.core.MultiMap
 import org.vertx.groovy.core.Vertx
 import org.vertx.groovy.core.buffer.Buffer
-import org.vertx.java.core.json.impl.Json
-import org.vertx.mods.web.WebServerBase
-import org.vertx.java.core.http.RouteMatcher as JRM
-
 import org.vertx.groovy.core.eventbus.Message
 import org.vertx.groovy.core.http.HttpServerRequest
 import org.vertx.groovy.core.http.RouteMatcher
+import org.vertx.groovy.core.AsyncResult
+import org.vertx.java.core.http.RouteMatcher as JRM
+import org.vertx.java.core.json.impl.Json
+import org.vertx.mods.web.WebServerBase
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 public class MyGroovyWebServer extends WebServerBase {
 
-    private void responseError(HttpServerRequest req, Exception e) {
-        responseError(req, "System exception", e);
-    }
-
-    private void responseError(HttpServerRequest req, String error, Exception e) {
-        logger.error(error, e);
-        def json = ["status": "error", "message": error];
-        req.response.setStatusCode(500);
-        req.response.end(json);
-    }
+//    private void responseError(HttpServerRequest req, Exception e) {
+//        responseError(req, "System exception", e);
+//    }
+//
+//    private void responseError(HttpServerRequest req, String error, Exception e) {
+//        logger.error(error, e);
+//        def json = ["status": "error", "message": error];
+//        req.response.setStatusCode(500);
+//        req.response.end(json);
+//    }
 
 
     @Override
@@ -35,73 +33,68 @@ public class MyGroovyWebServer extends WebServerBase {
         RouteMatcher matcher = new RouteMatcher();
         def vertx = new Vertx(vertx)
 
-        matcher.get("/product") { HttpServerRequest req ->
-            try {
-                vertx.eventBus.send('product/get', [id: req.params.id]) { Message reply ->
-                    req.response.end(Json.encode(reply.body()))
+        /**
+         *  获取商品详情
+         *  可以被缓存
+         */
+        matcher.get("/item") { HttpServerRequest req ->
+            vertx.eventBus.sendWithTimeout("getItem",[id:req.params.id],1000L){AsyncResult<Message> reply ->
+                if(reply.succeeded){
+                    reply.result.reply("aaaaa")
+//                    req.response.end(Json.encode(reply.result.body()))
+                }else{
+//                    req.response.end(reply.result.reply())
+//                    reply.result.reply("aaaaa")
                 }
-            } catch (BusinessException e) {
-                responseError(req, e.getMessage(), e);
-            } catch (Exception e) {
-                responseError(req, e);
             }
         }
 
-//        matcher.get("/price"){
-//
-//        }
-        matcher.get("/inventories") { HttpServerRequest req ->
-            try {
-                vertx.eventBus.send("inventories/get", [ids: req.params.get("ids")?.split(",")]) { Message reply ->
-                    req.response.end(Json.encode(reply.body()));
-                }
-            } catch (BusinessException e) {
-                responseError(req, e.getMessage(), e);
-            } catch (Exception e) {
-                responseError(req, e);
+//        matcher.get("/price"){}
+
+        /**
+         * 根据skuId列表获取sku可售库存
+         * 实时
+         */
+        matcher.get("/skus/quantity") { HttpServerRequest req ->
+            vertx.eventBus.send("findAllQuantitiesBySkuIds", [ids: req.params.get("ids")?.split(",")]) { Message reply ->
+                req.response.end(Json.encode(reply.body()));
             }
         }
 
+        /**
+         * 获取当前系统时间
+         */
         matcher.get("/time") { HttpServerRequest req ->
             Date now = new Date();
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             req.response.end(Json.encode([status: "ok", currentTime: dateFormat.format(now)]));
         }
 
-        matcher.post("/order") { HttpServerRequest req ->
-
+        /**
+         * 发起一笔交易
+         * 创建订单
+         */
+        matcher.post("/trade") { HttpServerRequest req ->
             req.bodyHandler { Buffer buffer ->
                 String contentType = req.headers.get("Content-Type")
-                logger.info(buffer.toString())
+                logger.debug(buffer.toString())
                 def params = [:]
-//                if ("application/x-www-form-urlencoded".equals(contentType)) {
+                if (contentType.contains("application/x-www-form-urlencoded")) {
                     def qsd = new QueryStringDecoder(buffer.toString(), false)
                     params = qsd.parameters().collectEntries {
                         if (it.value.size() <= 1) {
-                            ["${it.key}": it.value.get(0)]
-                        }else{
-                            ["${it.key}": it.value]
+                            [(it.key), it.value.get(0)]
+                        } else {
+                            [(it.key), it.value]
                         }
                     }
-//                }
-                vertx.eventBus.send("order/post", params) { Message reply ->
+                } else {
+                    //TODO still not support content type "multipart/form-data"
+                }
+                vertx.eventBus.send("createTrade", params) { Message reply ->
                     req.response.end(Json.encode(reply.body()))
                 }
             }
-//            req.expectMultiPart=true
-//            req.endHandler() {
-//                MultiMap multiMap = req.formAttributes;
-//
-//                def map = multiMap.entries.groupBy {
-//                    it.key
-//                }
-//
-//                logger.info(map)
-//
-//                vertx.eventBus.send("order/post", map) { Message reply ->
-//                    req.response.end(Json.encode(reply.body()))
-//                }
-//            }
         }
 
 

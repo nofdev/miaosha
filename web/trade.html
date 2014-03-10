@@ -10,13 +10,14 @@
     <div id="result"></div>
     <script language="JavaScript">
         var submitOrder = function(json){
-            $.post("/order", json, function(data){
+            $.post("/trade", json, function(data){
                 $("#result").html(data);
             });
         };
 
         $("#testOrderSubmit").click(function(){
-            var json = {cart:"[{skuId:1001, quantity:10},{skuId:1002,quantity:20}]",addressId:2000};
+            var cartItems = '[{"skuId":1001,"quantity":10},{"skuId":1002,"quantity":20}]'
+            var json = {"cartItems":cartItems,"addressId":2000};
             submitOrder(json);
         });
     </script>

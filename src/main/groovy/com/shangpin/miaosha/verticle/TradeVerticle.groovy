@@ -14,26 +14,30 @@ class TradeVerticle extends BusModBase {
     def start() {
         super.start()
 
-        vertx.eventBus.registerHandler("createTrade") { Message message ->
-            container.logger.info("Trade post request message is " + message.body())
+        /**
+         * 下单
+         */
+        eventBus.registerHandler("createTrade") { Message message ->
+            logger.info("Trade post request message is " + message.body())
+            def params = Json.decodeValue(message.body().params,Map.class)
 
-            def cartItems = Json.decodeValue(message.body().cartItems, List.class)
+            logger.info(params)
 
-            def skuIds = cartItems.collect {
+            def skuIds = params.cartItems.collect {
                 it.skuId
             }
 
-            vertx.eventBus.send("findAllQuantitiesBySkuIds", skuIds) { Message result ->
+            eventBus.send("findAllQuantitiesBySkuIds", skuIds) { Message result ->
                 if("error".equals(result.body().status)){
                     sendError(result,result.body().message)
                     return
                 }
             }
 
-            def matcher = [_id: message.body().get("skuId")]
-            def findOps = [collection: "inventories", action: "findone", matcher: matcher]
+//            def matcher = [_id: message.body().get("skuId")]
+//            def findOps = [collection: "inventories", action: "findone", matcher: matcher]
 
-            vertx.eventBus.send("mongodb-persistor", findOps) { Message result ->
+            eventBus.send("mongodb-persistor", findOps) { Message result ->
                 message.reply(result.body)
             }
         }

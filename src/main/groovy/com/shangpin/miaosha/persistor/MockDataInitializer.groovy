@@ -1,6 +1,7 @@
 package com.shangpin.miaosha.persistor
 
 import org.vertx.groovy.platform.Verticle
+import org.vertx.java.core.eventbus.Message
 
 /**
  * Created by Qiang on 3/1/14.

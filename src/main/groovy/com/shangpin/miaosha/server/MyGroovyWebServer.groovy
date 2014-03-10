@@ -16,17 +16,14 @@ import java.text.SimpleDateFormat
 
 public class MyGroovyWebServer extends WebServerBase {
 
-//    private void responseError(HttpServerRequest req, Exception e) {
-//        responseError(req, "System exception", e);
-//    }
-//
-//    private void responseError(HttpServerRequest req, String error, Exception e) {
-//        logger.error(error, e);
-//        def json = ["status": "error", "message": error];
-//        req.response.setStatusCode(500);
-//        req.response.end(json);
-//    }
+    private def responseError(HttpServerRequest req, Throwable e) {
+        logger.error(e.getMessage(), e)
+        def json = ["status": "error", "message": "System exception"];
+        req.response.setStatusCode(500);
+        req.response.end(Json.encode(json));
+    }
 
+    private static final long DEFAULT_TIMEOUT_TIME = 1000l
 
     @Override
     JRM routeMatcher() {
@@ -38,13 +35,11 @@ public class MyGroovyWebServer extends WebServerBase {
          *  可以被缓存
          */
         matcher.get("/item") { HttpServerRequest req ->
-            vertx.eventBus.sendWithTimeout("getItem",[id:req.params.id],1000L){AsyncResult<Message> reply ->
-                if(reply.succeeded){
-                    reply.result.reply("aaaaa")
-//                    req.response.end(Json.encode(reply.result.body()))
-                }else{
-//                    req.response.end(reply.result.reply())
-//                    reply.result.reply("aaaaa")
+            vertx.eventBus.sendWithTimeout("getItem", [id: req.params.id], DEFAULT_TIMEOUT_TIME) { AsyncResult<Message> reply ->
+                if (reply.succeeded) {
+                    req.response.end(Json.encode(reply.result.body()))
+                } else {
+                    responseError(req, reply.cause)
                 }
             }
         }
@@ -56,8 +51,12 @@ public class MyGroovyWebServer extends WebServerBase {
          * 实时
          */
         matcher.get("/skus/quantity") { HttpServerRequest req ->
-            vertx.eventBus.send("findAllQuantitiesBySkuIds", [ids: req.params.get("ids")?.split(",")]) { Message reply ->
-                req.response.end(Json.encode(reply.body()));
+            vertx.eventBus.sendWithTimeout("findAllQuantitiesBySkuIds", [ids: req.params.get("ids")?.split(",")],DEFAULT_TIMEOUT_TIME) { AsyncResult<Message> reply ->
+                if (reply.succeeded) {
+                    req.response.end(Json.encode(reply.result.body()));
+                } else {
+                    responseError(req, reply.cause)
+                }
             }
         }
 
@@ -77,9 +76,9 @@ public class MyGroovyWebServer extends WebServerBase {
         matcher.post("/trade") { HttpServerRequest req ->
             req.bodyHandler { Buffer buffer ->
                 String contentType = req.headers.get("Content-Type")
-                logger.debug(buffer.toString())
+                logger.info(buffer.toString())
                 def params = [:]
-                if (contentType.contains("application/x-www-form-urlencoded")) {
+                if (contentType?.contains("application/x-www-form-urlencoded")) {
                     def qsd = new QueryStringDecoder(buffer.toString(), false)
                     params = qsd.parameters().collectEntries {
                         if (it.value.size() <= 1) {
@@ -91,12 +90,15 @@ public class MyGroovyWebServer extends WebServerBase {
                 } else {
                     //TODO still not support content type "multipart/form-data"
                 }
-                vertx.eventBus.send("createTrade", params) { Message reply ->
-                    req.response.end(Json.encode(reply.body()))
+                vertx.eventBus.sendWithTimeout("createTrade", params, DEFAULT_TIMEOUT_TIME) { AsyncResult<Message> reply ->
+                    if (reply.succeeded) {
+                        req.response.end(Json.encode(reply.result.body()));
+                    } else {
+                        responseError(req, reply.cause)
+                    }
                 }
             }
         }
-
 
         matcher.jRM.noMatch(staticHandler());
         return matcher.jRM;

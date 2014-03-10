@@ -12,6 +12,7 @@ class ItemVerticle extends BusModBase {
     def start() {
 
         super.start()
+
         /**
          * 获取商品信息
          * 不包括库存

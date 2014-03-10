@@ -3,21 +3,33 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title></title>
-    <script src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
+    <script src="js/jquery-2.0.0.min.js"></script>
+    <script src="js/jquery.serializeJSON.min.js"></script>
 </head>
 <body>
     <a id="testOrderSubmit" href="#">Test Order Submit</a>
     <div id="result"></div>
+    <form id="orderForm">
+        <input name="receiving[name]" type="text" value="mengqiang">
+        <input name="receiving[mobile]" type="text" value="13910828717">
+        <input name="receiving[post]" type="text" value="100022">
+        <input name="cartItems[][skuId]" type="text" value="1001">
+        <input name="cartItems[][quantity]" type="text" value="10">
+        <input name="cartItems[][skuId]" type="text" value="1002">
+        <input name="cartItems[][quantity]" type="text" value="20">
+    </form>
     <script language="JavaScript">
         var submitOrder = function(json){
-            $.post("/trade", json, function(data){
+            $.post("/trade", {"params":JSON.stringify(json)}, function(data){
                 $("#result").html(data);
             });
         };
 
         $("#testOrderSubmit").click(function(){
-            var cartItems = '[{"skuId":1001,"quantity":10},{"skuId":1002,"quantity":20}]'
-            var json = {"cartItems":cartItems,"addressId":2000};
+//            var cartItems = '[{"skuId":1001,"quantity":10},{"skuId":1002,"quantity":20}]'
+//            var receiving = '{"name":"mengqiang","provinceId":1,"cityId":1,"areaId":1,"address":"西大望路甲12号通惠国际传媒广场3号楼5层","post":"100022","phone":"010-64644646-0351","mobile":"13910828717"}'
+            var json = $("#orderForm").serializeJSON();
+            console.log(JSON.stringify(json));
             submitOrder(json);
         });
     </script>

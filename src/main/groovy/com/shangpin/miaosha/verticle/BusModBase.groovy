@@ -39,12 +39,14 @@ class BusModBase extends Verticle {
         sendStatus("ok", message, map)
     }
 
-    def sendError(Message message, String error) {
-        sendError(message, error, null)
+    def sendError(Message message, String error, Boolean isLogger = true) {
+        sendError(message, error, null, isLogger)
     }
 
-    def sendError(Message message, String error, Exception e) {
-        logger.error(error, e)
+    def sendError(Message message, String error, Exception e, Boolean isLogger = true) {
+        if (isLogger) {
+            logger.error(error, e)
+        }
         message.reply([status: "error", message: error])
     }
 }

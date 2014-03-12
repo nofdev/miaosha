@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html ng-app="tradeApp">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="lib/angular/angular.min.js"></script>
+    <script src="js/controllers.js"></script>
+</head>
+<body ng-controller="tradeCtrl">
+<form name="orderForm" ng-submit="submitOrderForm()">
+    <!--<input ng-model="fields.name"/>-->
+    <ul ng-repeat="cartItem in params.cartItems">
+        <li>{{cartItem.skuId}}:{{cartItem.quantity}}</li>
+    </ul>
+    <input type="text" ng-model="params.receiving.name" />
+    <input type="text" ng-model="params.receiving.address" />
+    <input type="text" ng-model="params.receiving.post" />
+</form>
+<div>{{params}}</div>
+</body>
+</html>

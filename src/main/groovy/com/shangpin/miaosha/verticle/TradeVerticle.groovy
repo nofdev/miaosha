@@ -26,7 +26,7 @@ class TradeVerticle extends BusModBase {
                 it.skuId
             }
 
-            eventBus.send("findAllQuantitiesBySkuIds", skuIds) { Message result ->
+            eventBus.send("findAllQuantitiesBySkuIds", [ids: skuIds]) { Message result ->
                 if ("error".equals(result.body().status)) {
                     sendError(message, result.body().message)
                     return
@@ -39,19 +39,30 @@ class TradeVerticle extends BusModBase {
                         def cartItemMap = cartItems.collectEntries {
                             [(it.skuId): it.quantity]
                         }
+
+                        logger.info(cartItemMap)
+
                         def resultMap = results.collectEntries {
                             [(it._id): it.quantity]
                         }
-                        def soldOutSkuIds = cartItemMap.collectMany {
-                            it.value > resultMap[it.key] ? [it.key] : [it.key]
+
+                        logger.info(resultMap)
+
+                        def soldOutSkuIds = []//TODO 可以用collectMany{it.value > resultMap[it.key] ? [it.key] : []}解决，但是有运行时错误，可能是groovy-all的bug
+                        cartItemMap.each {
+                            logger.info(it.value.dump())
+//                            if (it.value > resultMap["1001"]) soldOutSkuIds.add(it.key)
                         }
+
+                        logger.info(soldOutSkuIds)
+
                         if (soldOutSkuIds.size > 0) {
                             sendError(message, "${soldOutSkuIds} have sold out")
                             return
                         } else {
                             cartItemMap.each {
-                                def criteria = [_id: it.skuId,$atomic: true]
-                                def objNew = [$inc: [quantity: (0-it.quantity)]]
+                                def criteria = [_id: it.key, $atomic: true]
+                                def objNew = [$inc: [quantity: (0 - it.value)]]
                                 def updateOps = [action: "update", collection: "inventories", criteria: criteria, objNew: objNew, upsert: false, multi: false]
                                 eventBus.send("mongodb-persistor", updateOps)
                             }

@@ -74,6 +74,7 @@ buildscript {
       // are concurrent builds
       mavenLocal()
     }
+    maven { url 'http://nexus.sp.cn:8081/nexus/content/groups/public' }
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     mavenCentral()
   }

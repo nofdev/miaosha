@@ -18,9 +18,17 @@ public class MyGroovyWebServer extends WebServerBase {
 
     private def responseError(HttpServerRequest req, Throwable e) {
         logger.error(e.getMessage(), e)
-        def json = ["status": "error", "message": "System exception"];
-        req.response.setStatusCode(500);
-        req.response.end(Json.encode(json));
+        def json = ["status": "error", "message": "System exception"]
+        req.response.setStatusCode(500)
+        req.response.putHeader("Content-Type", "application/json;charset=utf-8")
+        req.response.end(Json.encode(json))
+    }
+
+    private def responseOK(HttpServerRequest req, Map map) {
+        map.put("status": "ok")
+        req.response.setStatusCode(200)
+        req.response.putHeader("Content-Type", "application/json;charset=utf-8")
+        req.response.end(Json.encode(map))
     }
 
     private static final long DEFAULT_TIMEOUT_TIME = 1000l
@@ -37,7 +45,7 @@ public class MyGroovyWebServer extends WebServerBase {
         matcher.get("/item") { HttpServerRequest req ->
             vertx.eventBus.sendWithTimeout("getItem", [id: req.params.id], DEFAULT_TIMEOUT_TIME) { AsyncResult<Message> reply ->
                 if (reply.succeeded) {
-                    req.response.end(Json.encode(reply.result.body()))
+                    responseOK(req,reply.result.body())
                 } else {
                     responseError(req, reply.cause)
                 }
@@ -51,9 +59,9 @@ public class MyGroovyWebServer extends WebServerBase {
          * 实时
          */
         matcher.get("/skus/quantity") { HttpServerRequest req ->
-            vertx.eventBus.sendWithTimeout("findAllQuantitiesBySkuIds", [ids: req.params.get("ids")?.split(",")],DEFAULT_TIMEOUT_TIME) { AsyncResult<Message> reply ->
+            vertx.eventBus.sendWithTimeout("findAllQuantitiesBySkuIds", [ids: req.params.get("ids")?.split(",")], DEFAULT_TIMEOUT_TIME) { AsyncResult<Message> reply ->
                 if (reply.succeeded) {
-                    req.response.end(Json.encode(reply.result.body()));
+                    responseOK(reply.result.body());
                 } else {
                     responseError(req, reply.cause)
                 }
@@ -66,7 +74,7 @@ public class MyGroovyWebServer extends WebServerBase {
         matcher.get("/time") { HttpServerRequest req ->
             Date now = new Date();
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            req.response.end(Json.encode([status: "ok", currentTime: dateFormat.format(now)]));
+            responseOK([status: "ok", currentTime: dateFormat.format(now)]);
         }
 
         /**
@@ -76,7 +84,8 @@ public class MyGroovyWebServer extends WebServerBase {
         matcher.post("/trade") { HttpServerRequest req ->
             req.bodyHandler { Buffer buffer ->
                 String contentType = req.headers.get("Content-Type")
-                logger.info(buffer.toString())
+                logger.debug("Content type is ${contentType}")
+                logger.debug("Body is ${buffer.toString()}")
                 def params = [:]
                 if (contentType?.contains("application/x-www-form-urlencoded")) {
                     def qsd = new QueryStringDecoder(buffer.toString(), false)
@@ -87,15 +96,27 @@ public class MyGroovyWebServer extends WebServerBase {
                             [(it.key), it.value]
                         }
                     }
+                } else if (contentType?.contains("application/json")) {
+                    params = Json.decodeValue(buffer.toString(), Map.class)
                 } else {
                     //TODO still not support content type "multipart/form-data"
                 }
+                logger.debug("Params is ${params}")
                 vertx.eventBus.sendWithTimeout("createTrade", params, DEFAULT_TIMEOUT_TIME) { AsyncResult<Message> reply ->
                     if (reply.succeeded) {
-                        req.response.end(Json.encode(reply.result.body()));
+                        responseOK(reply.result.body());
                     } else {
                         responseError(req, reply.cause)
                     }
+                }
+            }
+        }
+
+        matcher.get("/testClient") {
+
+            (0..50).each {
+                vertx.eventBus.send("createOrder", [:]) { Message message ->
+                    logger.info(message.body())
                 }
             }
         }

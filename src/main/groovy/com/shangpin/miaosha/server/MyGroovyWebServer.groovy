@@ -25,7 +25,7 @@ public class MyGroovyWebServer extends WebServerBase {
     }
 
     private def responseOK(HttpServerRequest req, Map map) {
-        map.put("status": "ok")
+        map<<["status": "ok"]
         req.response.setStatusCode(200)
         req.response.putHeader("Content-Type", "application/json;charset=utf-8")
         req.response.end(Json.encode(map))

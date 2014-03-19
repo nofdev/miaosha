@@ -10,7 +10,7 @@
         "pool_size": 15,
         "db_name": "miaosha",
 //        "fake": false,
-        "use_ssl":false
+        "use_ssl": false
     },
     "web-server": {
 //        "web_root": "web",
@@ -33,6 +33,13 @@
 //        },
 //        "auth_timeout": 5,//minutes
 //        "auth_address": "vertx.basicauthmanager.authorise"
+    },
+    "order-client": {
+        "port": 8000,
+        "host": "localhost",
+        "keep_alive": false,
+        "max_pool_size": 20,
+        "uri":"/sundial/code/test"
     }
 //    ,
 //    "auth-mgr":{

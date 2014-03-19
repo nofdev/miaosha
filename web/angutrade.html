@@ -12,10 +12,12 @@
     <ul ng-repeat="cartItem in params.cartItems">
         <li>{{cartItem.skuId}}:{{cartItem.quantity}}</li>
     </ul>
-    <input type="text" ng-model="params.receiving.name" />
+    <input type="text" ng-model="params.receiving.name" required placeholder="Enter you name here" />
     <input type="text" ng-model="params.receiving.address" />
     <input type="text" ng-model="params.receiving.post" />
+    <input type="submit" value="Submit">
 </form>
 <div>{{params}}</div>
+<div>{{result}}</div>
 </body>
 </html>

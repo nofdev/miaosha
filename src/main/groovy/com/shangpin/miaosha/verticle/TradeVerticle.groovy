@@ -1,5 +1,6 @@
 package com.shangpin.miaosha.verticle
 
+import com.darylteo.vertx.promises.groovy.Promise
 import com.fasterxml.jackson.core.type.TypeReference
 import org.vertx.groovy.core.eventbus.Message
 import org.vertx.groovy.platform.Verticle
@@ -20,12 +21,64 @@ class TradeVerticle extends BusModBase {
         eventBus.registerHandler("createTrade") { Message message ->
             logger.debug("Trade post request message is " + message.body())
 
-            def params = Json.decodeValue(message.body().params, Map.class)
+            def params = message.body()
             def cartItems = params.cartItems
             def skuIds = cartItems.collect {
                 it.skuId
             }
 
+//            def promise = Promise.defer()
+//            promise.fulfill(message)
+//            promise.then{
+//                eventBus.send("findAllQuantitiesBySkuIds", [ids: skuIds]) { Message result ->
+//                    if ("error".equals(result.body().status)) {
+//                        promise.reject(result.body().message)
+//                    }else{
+//                        def results = result.body().results
+//                        if (skuIds.size() != results.size()) {
+//                            promise.reject("Invalid skuIds")
+//                        }else{
+//                            def cartItemMap = cartItems.collectEntries {
+//                                [(it.skuId): it.quantity]
+//                            }
+//                            logger.debug(cartItemMap)
+//                            def resultMap = results.collectEntries {
+//                                [(it._id): it.quantity]
+//                            }
+//                            logger.debug(resultMap)
+//                            def soldOutSkuIds = []//TODO 可以用collectMany{it.value > resultMap[it.key] ? [it.key] : []}解决，但是有运行时错误，可能是groovy-all的bug
+//                            cartItemMap.each {
+//                                if (it.value > resultMap["1001"]) soldOutSkuIds.add(it.key)
+//                            }
+//                            logger.debug(soldOutSkuIds)
+//                            if (soldOutSkuIds.size > 0) {
+//                                promise.reject("${soldOutSkuIds} have sold out")//售罄
+//                            }else {
+//                                //TODO promises
+//                                cartItemMap.each {
+//                                    def criteria = [_id: it.key, $atomic: true]
+//                                    def objNew = [$inc: [quantity: (0 - it.value)]]
+//                                    def updateOps = [action: "update", collection: "inventories", criteria: criteria, objNew: objNew, upsert: false, multi: false]
+//                                    eventBus.send("mongodb-persistor", updateOps)
+//                                }
+//                                //TODO 连接下单服务（同步）
+//                                eventBus.send("confirmOrder",[:]){Message reply
+//
+//                                }
+////                            eventBus.send("syncCreateOrder",[:]){Message result2 ->
+////                                if(result2.body().status=="ok"){
+////                                    sendOK(message)
+////                                }
+////                            }
+//                                //TODO 连接更新库存服务（异步）
+////                            sendOK(message)
+//                            }
+//                        }
+//                    }
+//                }
+//            }.then({sendOK(message)},{sendError(message,promise.reason.message)})
+
+            //先查流量库存，没有返回售罄
             eventBus.send("findAllQuantitiesBySkuIds", [ids: skuIds]) { Message result ->
                 if ("error".equals(result.body().status)) {
                     sendError(message, result.body().message)
@@ -39,27 +92,21 @@ class TradeVerticle extends BusModBase {
                         def cartItemMap = cartItems.collectEntries {
                             [(it.skuId): it.quantity]
                         }
-
-                        logger.info(cartItemMap)
-
+                        logger.debug(cartItemMap)
                         def resultMap = results.collectEntries {
                             [(it._id): it.quantity]
                         }
-
-                        logger.info(resultMap)
-
+                        logger.debug(resultMap)
                         def soldOutSkuIds = []//TODO 可以用collectMany{it.value > resultMap[it.key] ? [it.key] : []}解决，但是有运行时错误，可能是groovy-all的bug
                         cartItemMap.each {
-                            logger.info(it.value.dump())
-//                            if (it.value > resultMap["1001"]) soldOutSkuIds.add(it.key)
+                            if (it.value > resultMap["1001"]) soldOutSkuIds.add(it.key)
                         }
-
-                        logger.info(soldOutSkuIds)
-
+                        logger.debug(soldOutSkuIds)
                         if (soldOutSkuIds.size > 0) {
-                            sendError(message, "${soldOutSkuIds} have sold out")
+                            sendError(message, "${soldOutSkuIds} have sold out")//售罄
                             return
                         } else {
+                            //TODO promises
                             cartItemMap.each {
                                 def criteria = [_id: it.key, $atomic: true]
                                 def objNew = [$inc: [quantity: (0 - it.value)]]
@@ -67,8 +114,16 @@ class TradeVerticle extends BusModBase {
                                 eventBus.send("mongodb-persistor", updateOps)
                             }
                             //TODO 连接下单服务（同步）
+                            eventBus.send("confirmOrder",[:]){Message reply
+
+                            }
+//                            eventBus.send("syncCreateOrder",[:]){Message result2 ->
+//                                if(result2.body().status=="ok"){
+//                                    sendOK(message)
+//                                }
+//                            }
                             //TODO 连接更新库存服务（异步）
-                            sendOK(message)
+//                            sendOK(message)
                         }
                     }
                 }

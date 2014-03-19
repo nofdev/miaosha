@@ -61,6 +61,7 @@ dependencies {
   provided "org.codehaus.groovy:groovy-all:$groovyVersion"
   provided "io.vertx:lang-groovy:$groovyLangModVersion@jar"
   compile "io.vertx:mod-web-server:2.0.0-final"
+  provided "com.darylteo.vertx:vertx-promises-groovy:$vertxPromisesGroovyVersion"
 }
 
 test {

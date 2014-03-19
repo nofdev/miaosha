@@ -25,13 +25,14 @@ class App extends Verticle {
             deployVerticle("groovy:com.shangpin.miaosha.verticle.ItemVerticle")
             deployVerticle("groovy:com.shangpin.miaosha.verticle.TradeVerticle")
 //            deployWorkerVerticle("groovy:com.shangpin.miaosha.worker.TestMultiWorker", null, 5)
+            deployVerticle("groovy:com.shangpin.miaosha.verticle.OrderClientVerticle",config.get("order-client"))
         }
-
 
 //        (0..1000).each {
 //            vertx.eventBus.send("testMultiWorder", "ping") { Message message ->
 //                logger.info(message.body())
 //            }
 //        }
+
     }
 }

@@ -1,44 +1,46 @@
 {
 
-  // Java verticle
-  "main":"groovy:com.shangpin.miaosha.server.App",
+    // Java verticle
+    "main": "groovy:com.shangpin.miaosha.server.App",
 //  "main":"com.mycompany.myproject.PingVerticle",
-  "preserve-cwd":true,
+    "preserve-cwd": true,
 
-  // In this example we also provide various other versions of the main verticle, you can uncomment this and
-  // play around:
+//    "includes": "com.darylteo~vertx-promises-groovy~1.1.0",
 
-  // Java *source* verticle
-  //"main":"JavaSourcePingVerticle.java",
+    // In this example we also provide various other versions of the main verticle, you can uncomment this and
+    // play around:
 
-  // Compiled Groovy verticle - note that they must be prefixed with 'groovy:' to distinguish them from compiled Java verticles
-  //"main":"groovy:com.mycompany.myproject.GroovyPingVerticle",
+    // Java *source* verticle
+    //"main":"JavaSourcePingVerticle.java",
 
-  // Groovy *script* verticle
+    // Compiled Groovy verticle - note that they must be prefixed with 'groovy:' to distinguish them from compiled Java verticles
+    //"main":"groovy:com.mycompany.myproject.GroovyPingVerticle",
+
+    // Groovy *script* verticle
 //  "main": "GroovyVerticle.groovy",
 
-  // Ruby verticle
-  //"main":"ping_verticle.rb",
+    // Ruby verticle
+    //"main":"ping_verticle.rb",
 
-  // JavaScript verticle
-  //"main": "ping_verticle.js",
+    // JavaScript verticle
+    //"main": "ping_verticle.js",
 
-  // Python verticle
-  //"main": "ping_verticle.py",
+    // Python verticle
+    //"main": "ping_verticle.py",
 
 
-  // If your module is going to be registered in the Vert.x module registry you will also need the following
-  // mandatory fields
-  "description":"Put description of your module here",
-  "licenses": ["The Apache Software License Version 2.0"],
-  "author": "Joe Bloggs",
+    // If your module is going to be registered in the Vert.x module registry you will also need the following
+    // mandatory fields
+    "description": "Put description of your module here",
+    "licenses": ["The Apache Software License Version 2.0"],
+    "author": "Joe Bloggs",
 
-  // Optional fields
-  "developers": ["Other Dev 1", "Other Dev 2"],
-  "keywords": ["gerbils", "cars", "cheese", "chocolate", "underpants", "herring"],
-  "homepage": "url to your project page",
+    // Optional fields
+    "developers": ["Other Dev 1", "Other Dev 2"],
+    "keywords": ["gerbils", "cars", "cheese", "chocolate", "underpants", "herring"],
+    "homepage": "url to your project page",
 
 //  "lang-impl":"io.vertx~lang-groovy~2.1RC1:org.vertx.groovy.platform.impl.GroovyVerticleFactory", //just take effect on a per module basis(@link https://bugs.eclipse.org/bugs/show_bug.cgi?id=427490)
-  "auto-redeploy": true
+    "auto-redeploy": true
 
 }

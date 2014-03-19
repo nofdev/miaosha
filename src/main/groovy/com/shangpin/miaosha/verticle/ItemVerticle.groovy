@@ -10,7 +10,6 @@ import org.vertx.java.core.json.JsonObject
 class ItemVerticle extends BusModBase {
 
     def start() {
-
         super.start()
 
         /**
@@ -33,7 +32,6 @@ class ItemVerticle extends BusModBase {
                 message.reply(result.body)
             }
         }
-
         /**
          * 获取库存
          * {"results":[{"_id":"1001","quantity":200},{"_id":"1002","quantity":200}],"status":"ok","number":2}
